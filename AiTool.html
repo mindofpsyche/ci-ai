@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+    <!-- J Query CDN -->
+    <script src="js/jquery.min.js" ></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/AiTool.css">
+    <!-- Goggle Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Prism Js for Syntax Highlight -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css">
+   
+</head>
+<body>
+    
+    <div class="container-fluid">
+        <div class="col-xl-12 px-0">
+            <div class="navigation-bar">
+                <div class="col-xl-10 mx-auto h-100 d-flex align-items-center justify-content-between">
+                    <div class="nav-logo">
+                        <img src="images/logo.png" alt="">
+                    </div>
+                    <div class="nav-link">
+                        <li><a href="">Home</a></li>
+                        <li><a href="">About</a></li>
+                        <li><a href="">Services</a></li>
+                        <li><a href="">Contact Us</a></li>
+                    </div>
+                    <div class="acount-details">
+                        <h5>Company Name</h5>
+                        <span>Adminstrator</span>
+                    </div>
+                </div>
+            </div>            
+        </div>
+        
+
+        <div class="col-xl-12 mx-auto ai-tool-wrapper h-100 d-flex align-items-center">
+            <div class="col-xl-8 h-100">
+                <div class="ai-tool-response h-100">
+                    <div class="editor-heading-container">
+                        <div class="editor-heading d-flex align-items-center justify-content-between">
+                            <h5>CODE PREVIEW</h5>
+                            <p>You can edit the code.</p>
+                        </div>
+                        <h5>Evaluation Code</h5>
+                    </div>
+                    <div class="code-editor">
+                        <div class="code-preview">
+                            <div class="editor">
+                                <div class="code-container">
+<pre class="code" id="code"><code class="language-javascript">
+provider "azurerm" {
+features {}
+}
+
+#Create the Resource Group
+resource "azurerm_resource_group" "rg" {
+location = "eastus"
+name     = "example-rg"
+}
+
+# Create virtual network
+resource "azurerm_virtual_network" "my_terraform_network" {
+name                = "example-vnet"
+address_space       = ["10.0.0.0/16"]
+location            = azurerm_resource_group.rg.location
+resource_group_name = azurerm_resource_group.rg.name
+}
+
+# Create subnet
+resource "azurerm_subnet" "my_terraform_subnet" {
+name                 = "example-subnet"
+resource_group_name  = azurerm_resource_group.rg.name
+virtual_network_name = azurerm_virtual_network.my_terraform_network.name
+address_prefixes     = ["10.0.1.0/24"]
+}
+
+# Create public IPs
+resource "azurerm_public_ip" "my_terraform_public_ip" {
+name                = "example-public-ip"
+location            = azurerm_resource_group.rg.location
+resource_group_name = azurerm_resource_group.rg.name
+allocation_method   = "Dynamic"
+}
+
+# Create Network Security Group and rules
+resource "azurerm_network_security_group" "my_terraform_nsg" {
+name                = "example-nsg"
+location            = azurerm_resource_group.rg.location
+resource_group_name = azurerm_resource_group.rg.name
+
+security_rule {
+name                       = "RDP"
+priority                   = 1000
+direction                  = "Inbound"
+access                     = "Allow"
+protocol                   = "*"
+source_port_range          = "*"
+destination_port_range     = "3389"
+source_address_prefix      = "*"
+destination_address_prefix = "*"
+}
+security_rule {
+name                       = "web"
+priority                   = 1001
+direction                  = "Inbound"
+access                     = "Allow"
+protocol                   = "Tcp"
+source_port_range          = "*"
+destination_port_range     = "80"
+source_address_prefix      = "*"
+destination_address_prefix = "*"
+}
+}
+
+# Create network interface
+resource "azurerm_network_interface" "my_terraform_nic" {
+name                = "example-nic"
+location            = azurerm_resource_group.rg.location
+resource_group_name = azurerm_resource_group.rg.name
+
+ip_configuration {
+name                          = "my_nic_configuration"
+subnet_id                     = azurerm_subnet.my_terraform_subnet.id
+private_ip_address_allocation = "Dynamic"
+public_ip_address_id          = azurerm_public_ip.my_terraform_public_ip.id
+}
+}
+
+# Connect the security group to the network interface
+resource "azurerm_network_interface_security_group_association" "example" {
+network_interface_id      = azurerm_network_interface.my_terraform_nic.id
+network_security_group_id = azurerm_network_security_group.my_terraform_nsg.id
+}
+
+# Create storage account for boot diagnostics
+resource "azurerm_storage_account" "my_storage_account" {
+name                     = "example1st"
+location                 = azurerm_resource_group.rg.location
+resource_group_name      = azurerm_resource_group.rg.name
+account_tier             = "Standard"
+account_replication_type = "LRS"
+}
+
+
+# Create virtual machine
+resource "azurerm_windows_virtual_machine" "main" {
+name                  = "example-vm"
+admin_username        = "azureuser"
+admin_password        = "Myvm123456789"
+location              = azurerm_resource_group.rg.location
+resource_group_name   = azurerm_resource_group.rg.name
+network_interface_ids = [azurerm_network_interface.my_terraform_nic.id]
+size                  = "Standard_DS1_v2"
+
+os_disk {
+name                 = "myOsDisk"
+caching              = "ReadWrite"
+storage_account_type = "Premium_LRS"
+}
+
+source_image_reference {
+publisher = "MicrosoftWindowsServer"
+offer     = "WindowsServer"
+sku       = "2022-datacenter-azure-edition"
+version   = "latest"
+}
+
+
+boot_diagnostics {
+storage_account_uri = azurerm_storage_account.my_storage_account.primary_blob_endpoint
+}
+}
+                                    </code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>      
+            </div>
+            <div class="col-xl-4">
+                <div class="control-panel">
+                    <div class="detail-container">
+                        <h4>Description</h4>
+                        <p>Write a description of the service.</p>
+                    </div>
+                    <div class="run-prompt-container">
+                        <textarea name="" id="" placeholder="Enter prompt"></textarea>
+                        <button id="run-prompt">Create Azure VM</button>
+                    </div>
+                    <div class="run-azure-cli-container">
+                        <p>Run the code in Azure CLI. Please ensure required permissions are granted.</p>
+                        <button id="run-azure-cli"><a href="cli.html">Run Azure CLI</a></button>
+                        <!-- New "Deploy" button -->
+                        <button id="deploy">Deploy</button>
+                    </div>
+                    <!-- New "Save Changes" button -->
+                    <button id="save-changes">Save Changes</button>
+                    <!-- New "Edit Code" button -->
+                    <button id="edit-code">Edit Code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js (required for Bootstrap functionality) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js" defer></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" defer></script>
+
+    <!-- Prism Js for Syntax Highlight -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js" defer></script>
+
+    <script>
+        // Hide code preview initially
+        $(document).ready(function(){
+            $('#code').hide();
+            $('#save-changes').hide();
+            $('#edit-code').hide();
+
+            $('#run-prompt').click(function (e) { 
+                $('#code').fadeIn(1000);
+                $('#save-changes').show();
+                $('#edit-code').show();
+                e.preventDefault(); 
+            });
+
+            // Function to save code
+            $('#save-changes').click(function () {
+                var codeContent = $('#code').text().trim();
+                var blob = new Blob([codeContent], { type: 'text/plain' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'code.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+
+            // Function to edit code
+            $('#edit-code').click(function () {
+                var codeElement = $('#code');
+                codeElement.attr('contenteditable', 'true').focus();
+            });
+
+            // Function to save changes
+            $('#code').blur(function () {
+                var codeElement = $('#code');
+                codeElement.removeAttr('contenteditable');
+            });
+
+            // Redirect function for "Deploy" button
+            $('#deploy').click(function () {
+                window.location.href = 'https://portal.azure.com/';
+            });
+        });
+    </script>
+</body>
+</html>
